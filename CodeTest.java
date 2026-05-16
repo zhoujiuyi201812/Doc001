@@ -1,48 +1,81 @@
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 class Solution {
-    public static void main(String args[] ) {
-        Scanner sc = new Scanner(System.in);
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
 
-        double x1 = sc.nextDouble();
-        double y1 = sc.nextDouble();
-        double r1 = sc.nextDouble();
-
-        double x2 = sc.nextDouble();
-        double y2 = sc.nextDouble();
-        double r2 = sc.nextDouble();
-
-        double dx = x1 - x2;
-        double dy = y1 - y2;
-        double d = Math.sqrt(dx * dx + dy * dy);
-
-        double ans;
-
-        if (d >= r1 + r2) {
-            ans = 0.0;
-        } else if (d <= Math.abs(r1 - r2)) {
-            double r = Math.min(r1, r2);
-            ans = Math.PI * r * r;
-        } else {
-            double v1 = (d * d + r1 * r1 - r2 * r2) / (2 * d * r1);
-            double v2 = (d * d + r2 * r2 - r1 * r1) / (2 * d * r2);
-
-            v1 = Math.max(-1.0, Math.min(1.0, v1));
-            v2 = Math.max(-1.0, Math.min(1.0, v2));
-
-            double a1 = Math.acos(v1);
-            double a2 = Math.acos(v2);
-
-            double area1 = r1 * r1 * a1;
-            double area2 = r2 * r2 * a2;
-            double area3 = 0.5 * Math.sqrt((-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2));
-
-            ans = area1 + area2 - area3;
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0) return -1;
+            }
+            return buffer[ptr++];
         }
 
-        System.out.printf("%.6f", ans);
+        int nextInt() throws IOException {
+            int c;
+            do {
+                c = read();
+            } while (c <= 32 && c != -1);
+
+            int sign = 1;
+            if (c == '-') {
+                sign = -1;
+                c = read();
+            }
+
+            int val = 0;
+            while (c > 32 && c != -1) {
+                val = val * 10 + c - '0';
+                c = read();
+            }
+            return val * sign;
+        }
+    }
+
+    public static void main(String args[]) throws Exception {
+        FastScanner fs = new FastScanner();
+        int n = fs.nextInt();
+
+        if (n <= 0) {
+            System.out.print(0);
+            return;
+        }
+
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++) {
+            a[i] = fs.nextInt();
+        }
+
+        long[] intervals = new long[n];
+        long offset = 1000000000L;
+
+        for (int i = 0; i < n; i++) {
+            int b = fs.nextInt();
+            int l = Math.min(a[i], b);
+            int r = Math.max(a[i], b);
+            intervals[i] = ((r + offset) << 32) | (l + offset);
+        }
+
+        Arrays.sort(intervals);
+
+        int ans = 0;
+        long point = Long.MIN_VALUE;
+
+        for (int i = 0; i < n; i++) {
+            long start = (intervals[i] & 0xffffffffL) - offset;
+            long end = (intervals[i] >>> 32) - offset;
+
+            if (start > point) {
+                ans++;
+                point = end;
+            }
+        }
+
+        System.out.print(ans);
     }
 }
